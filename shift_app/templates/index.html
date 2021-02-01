@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title>Flask Tutorial</title>
+    <script src="https://d3js.org/d3.v5.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <style type="text/css">
+        .ballGroup {
+            display:inline;
+        }
+        .buttonGroup {
+            display:inline;
+        }
+    </style>
+  </head>
+  <body>
+    <svg id="chart">
+        <!-- <img id="field" src="http://www.jes-baseball.com/animated/dfig/court4.png"></img> -->
+    </svg>
+    <div id="countMenu">
+        <div class="buttonGroup">
+            <h2>Name</h2>
+
+            <form id="nameForm">
+              <input id="nameGroup"></input>
+            </form>
+        </div>
+        <div class="buttonGroup">
+            <h2>Balls</h2>
+
+            <form id="ballForm">
+              <div class="buttonGroup"><input class="ballGroup" type="radio" name="radioButton" checked=true id="0">0</input></div>
+              <div class="buttonGroup"><input class="ballGroup" type="radio" name="radioButton" id="1">1</input></div>
+              <div class="buttonGroup"><input class="ballGroup" type="radio" name="radioButton" id="2">2</input></div>
+              <div class="buttonGroup"><input class="ballGroup" type="radio" name="radioButton" id="3">3</input></div>
+            </form>
+        </div>
+        <div <div class="buttonGroup">
+            <h2>Strikes</h2>
+            <form id="strikeForm">
+              <div class="buttonGroup"><input class="strikeGroup" type="radio" name="radioButton" checked=true id="0">0</input></div>
+              <div class="buttonGroup"><input class="strikeGroup" type="radio" name="radioButton" id="1">1</input></div>
+              <div class="buttonGroup"><input class="strikeGroup" type="radio" name="radioButton" id="2">2</input></div>
+            </form>
+        </div>
+    </div>
+    <div id="handMenu">
+        <h2>Pitcher Hand</h2>
+        <form id="pitcherForm">
+          <div><input class="pitcherGroup" type="radio" name="radioButton" checked=true id="left">Left</input></div>
+          <div><input class="pitcherGroup" type="radio" name="radioButton" id="right">Right</input></div>
+        </form>
+        <h2>Hitter</h2>
+        <form id="hitterForm">
+          <div><input class="hitterGroup" type="radio" name="radioButton" checked=true id="left">Left</input></div>
+          <div><input class="hitterGroup" type="radio" name="radioButton" id="right">Right</input></div>
+        </form>
+    </div>
+    <input id="submit" type="submit" value="Submit">
+    <a href='#'
+        onclick='downloadCSV({ filename: "shift-data.csv" });'
+    >Download CSV</a>
+
+
+    <script>
+        let data = [];
+        let submitted = [];
+        pending = 0;
+
+        let svg = d3.select("#chart")
+            .attr("height",370);
+
+        let field = svg.append("svg:image")
+            .attr("id","field")
+            .attr("xlink:href", "http://www.jes-baseball.com/animated/dfig/court4.png")
+            .attr("width",297)
+            .attr("height",369);
+
+        let angle;
+        let x_co;
+        let y_co;
+
+        let handDict = {
+            'right':'R',
+            'left':'L'
+        }
+
+        d3.select("#field").on('click',function(event){
+
+            const coordinates = [d3.event.pageX, d3.event.pageY];
+            const y = 430;
+            const x = 155;
+            let adjacent;
+            let opposite;
+            if(coordinates[0] > 155){
+                opposite = coordinates[0] - 155;
+                adjacent = y - coordinates[1];
+                angle = Math.atan2(adjacent,opposite);
+                x_co = coordinates[0];
+                y_co = coordinates[1];
+                dataObj = {
+                  "cx": coordinates[0],
+                  "cy": coordinates[1],
+                  "angle": angle
+                };
+                if(pending === 0){
+                    data.push(dataObj);
+                    pending = 1;
+                }
+                else{
+                    data.pop();
+                    data.push(dataObj);
+                }
+            }
+            else if (coordinates[0] <= 155) {
+                opposite = x - coordinates[0];
+                adjacent = y - coordinates[1];
+                angle = -Math.atan2(adjacent,opposite);
+                dataObj = {
+                  "cx": coordinates[0],
+                  "cy": coordinates[1],
+                  "angle": angle
+                };
+                if(pending === 0){
+                    data.push(dataObj);
+                    pending = 1;
+                }
+                else{
+                    data.pop();
+                    data.push(dataObj);
+                }
+            }
+            console.log(data);
+            updateCircles();
+        });
+
+        d3.select("#submit").on("click",function(event){
+            let balls;
+            let strikes;
+            let pitcher;
+            let hitter;
+            let name;
+
+            for(i=0;i<document.getElementsByClassName("ballGroup").length;i++){
+                //console.log(document.getElementsByClassName("ballGroup")[i]);
+                if(document.getElementsByClassName("ballGroup")[i].checked===true){
+                    balls = document.getElementsByClassName("ballGroup")[i].id;
+                    console.log(document.getElementsByClassName("ballGroup")[i].id);
+                }
+            }
+            for(i=0;i<document.getElementsByClassName("strikeGroup").length;i++){
+                //console.log(document.getElementsByClassName("ballGroup")[i]);
+                if(document.getElementsByClassName("strikeGroup")[i].checked===true){
+                    strikes = document.getElementsByClassName("strikeGroup")[i].id;
+                    console.log(document.getElementsByClassName("strikeGroup")[i].id);
+                }
+            }
+            for(i=0;i<document.getElementsByClassName("pitcherGroup").length;i++){
+                //console.log(document.getElementsByClassName("ballGroup")[i]);
+                if(document.getElementsByClassName("pitcherGroup")[i].checked===true){
+                    pitcher = handDict[document.getElementsByClassName("pitcherGroup")[i].id];
+                    console.log(document.getElementsByClassName("pitcherGroup")[i].id);
+                }
+            }
+            for(i=0;i<document.getElementsByClassName("hitterGroup").length;i++){
+                //console.log(document.getElementsByClassName("ballGroup")[i]);
+                if(document.getElementsByClassName("hitterGroup")[i].checked===true){
+                    hitter = handDict[document.getElementsByClassName("hitterGroup")[i].id];
+                    console.log(handDict[document.getElementsByClassName("hitterGroup")[i].id]);
+                }
+            }
+            console.log(document.getElementById("nameGroup").value);
+            name = document.getElementById("nameGroup").value;
+
+            if(angle){
+              console.log("test");
+              pending = 0;
+              submitted.push({
+                name: name,
+                cx: x_co,
+                cy: y_co,
+                hit_angle: angle,
+                balls: balls,
+                strikes: strikes,
+                pitcher: pitcher,
+                hitter: hitter
+              });
+              $.post( "/addPlay", {
+                    name: name,
+                    cx: x_co,
+                    cy: y_co,
+                    hit_angle: angle,
+                    balls: balls,
+                    strikes: strikes,
+                    pitcher: pitcher,
+                    hitter: hitter
+                });
+              angle = null;
+            }
+            console.log(submitted);
+
+            
+
+        });
+
+        const updateCircles = function(){
+            console.log("updating");
+
+            let circles = svg.selectAll("circle")
+                .data(data,(d)=>d.angle);
+
+            circles.exit().remove();
+
+            let new_circles = circles.enter()
+                .append("circle")
+                .attr("cx", (d,i)=> {
+                  console.log(d.cx);
+                  return d.cx - 8;
+                })
+                .attr("cy", (d) => d.cy)
+                .attr("r", 5);
+
+            circles = circles.merge(new_circles);
+        }
+
+        const convertArrayOfObjectsToCSV = function(args) {
+            var result, ctr, keys, columnDelimiter, lineDelimiter, data;
+
+            data = args.data || null;
+            if (data == null || !data.length) {
+                return null;
+            }
+
+            columnDelimiter = args.columnDelimiter || ',';
+            lineDelimiter = args.lineDelimiter || '\n';
+
+            keys = Object.keys(data[0]);
+
+            result = '';
+            result += keys.join(columnDelimiter);
+            result += lineDelimiter;
+
+            data.forEach(function(item) {
+                ctr = 0;
+                keys.forEach(function(key) {
+                    if (ctr > 0) result += columnDelimiter;
+
+                    result += item[key];
+                    ctr++;
+                });
+                result += lineDelimiter;
+            });
+
+            return result;
+        }
+
+        const downloadCSV = function(args) {
+            var data, filename, link;
+            var csv = convertArrayOfObjectsToCSV({
+                data: submitted
+            });
+            if (csv == null) return;
+
+            filename = args.filename || 'export.csv';
+
+            if (!csv.match(/^data:text\/csv/i)) {
+                csv = 'data:text/csv;charset=utf-8,' + csv;
+            }
+            data = encodeURI(csv);
+
+            link = document.createElement('a');
+            link.setAttribute('href', data);
+            link.setAttribute('download', filename);
+            link.click();
+        }
+
+
+
+    </script>
+  </body>
+</html>
