@@ -11,6 +11,7 @@ db = SQLAlchemy(app)
 # db.create_all()
 
 from models import *
+# db.create_all()
 
 @app.route("/")
 def home():
@@ -28,17 +29,17 @@ def addPlay():
     phand = request.values.get('pitcher', '')
     bhand = request.values.get('hitter', '')
 
-    print("INSERT INTO PLAY_BY_PLAY (BATTER_NAME,PITCHER_HAND,BATTER_HAND,STRIKES,BALLS,CX,CY,HIT_DIRECTION) VALUES ('" + str(name) + "' ,'" + phand + "','" + bhand + "'," + strikes +"," + balls + "," + cx +"," + cy + "," + hit_angle + ");")
+    # print("INSERT INTO PLAY_BY_PLAY (BATTER_NAME,PITCHER_HAND,BATTER_HAND,STRIKES,BALLS,CX,CY,HIT_DIRECTION) VALUES ('" + str(name) + "' ,'" + phand + "','" + bhand + "'," + strikes +"," + balls + "," + cx +"," + cy + "," + hit_angle + ");")
 
     # db.engine.execute("INSERT INTO PLAY_BY_PLAY (BATTER_NAME,PITCHER_HAND,BATTER_HAND,STRIKES,BALLS,CX,CY,HIT_DIRECTION) VALUES ('" + str(name) + "' ,'" + phand + "','" + bhand + "'," + strikes +"," + balls + "," + cx +"," + cy + "," + hit_angle + ");")
 
-    # new_row = play_by_play(name,phand,bhand,strikes,balls,cx,cy,hit_angle)
-    # try:
-    #     db.session.add(new_row)
-    # except:
-	# 	return {'result': 'upload failed'}
+    new_row = play_by_play(name,phand,bhand,strikes,balls,cx,cy,hit_angle)
+    try:
+        db.session.add(new_row)
+    except:
+		return {'result': 'upload failed'}
     
-    # db.session.commit()
+    db.session.commit()
     print(db.engine.execute('SELECT * FROM PLAY_BY_PLAY;'))
     return 'done'
 
