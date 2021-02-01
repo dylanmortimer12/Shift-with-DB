@@ -6,9 +6,9 @@ import os
 app = Flask(__name__)
 basedir = os.path.abspath(os.path.dirname(__file__))
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'app.sqlite')
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'app.db')
 db = SQLAlchemy(app)
-db.create_all()
+# db.create_all()
 
 from models import *
 
@@ -32,13 +32,13 @@ def addPlay():
 
     # db.engine.execute("INSERT INTO PLAY_BY_PLAY (BATTER_NAME,PITCHER_HAND,BATTER_HAND,STRIKES,BALLS,CX,CY,HIT_DIRECTION) VALUES ('" + str(name) + "' ,'" + phand + "','" + bhand + "'," + strikes +"," + balls + "," + cx +"," + cy + "," + hit_angle + ");")
 
-    new_row = play_by_play(name,phand,bhand,strikes,balls,cx,cy,hit_angle)
-    try:
-        db.session.add(new_row)
-    except:
-		return {'result': 'upload failed'}
+    # new_row = play_by_play(name,phand,bhand,strikes,balls,cx,cy,hit_angle)
+    # try:
+    #     db.session.add(new_row)
+    # except:
+	# 	return {'result': 'upload failed'}
     
-    db.session.commit()
-    # print(db.engine.execute('SELECT * FROM PLAY_BY_PLAY;'))
+    # db.session.commit()
+    print(db.engine.execute('SELECT * FROM PLAY_BY_PLAY;'))
     return 'done'
 
